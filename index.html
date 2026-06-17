@@ -1,41 +1,28 @@
 <!doctype html>
-<html lang="EN-us">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <title>raylib web game</title>
+    <title>BMSA</title>
 
-    <meta name="title" content="raylib web game">
-    <meta name="description" content="New raylib web videogame, developed using raylib videogames library">
-    <meta name="keywords" content="raylib, programming, examples, html5, C, C++, library, learn, games, videogames">
+    <meta name="title" content="BMSA">
+    <meta name="description" content="BMSA: a browser-based viewer for multiple sequence alignments (MSAs).">
+    <meta name="keywords" content="MSA, multiple sequence alignment, bioinformatics, FASTA, alignment viewer">
     <meta name="viewport" content="width=device-width">
 
     <!-- Open Graph metatags for sharing -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="raylib web game">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image" content="https://www.raylib.com/common/raylib_logo.png">
-    <meta property="og:image:alt" content="New raylib web videogame, developed using raylib videogames library" />
-    <meta property="og:site_name" content="raylib - example">
-    <meta property="og:url" content="https://www.raylib.com/games.html">
-    <meta property="og:description" content="New raylib web videogame, developed using raylib videogames library">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="BMSA">
+    <meta property="og:site_name" content="BMSA">
+    <meta property="og:description" content="A browser-based viewer for multiple sequence alignments.">
 
-    <!-- Twitter metatags for sharing -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@raysan5">
-    <meta name="twitter:title" content="raylib web game">
-    <meta name="twitter:image" content="https://www.raylib.com/common/raylib_logo.png">
-    <meta name="twitter:image:alt" content="New raylib web videogame, developed using raylib videogames library">
-    <meta name="twitter:url" content="https://www.raylib.com/games.html">
-    <meta name="twitter:description" content="New raylib web videogame, developed using raylib videogames library">
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="https://www.raylib.com/favicon.ico">
+    <!-- Favicon: an inline SVG, so there is no external request and no extra file to ship. -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='6'%20fill='%231d6fb8'/%3E%3Ctext%20x='16'%20y='23'%20font-family='Helvetica,Arial,sans-serif'%20font-size='19'%20font-weight='bold'%20text-anchor='middle'%20fill='white'%3EB%3C/text%3E%3C/svg%3E">
 
     <style>
-        body { margin: 0px; overflow: hidden; background-color: black; }
-        canvas.emscripten { border: 0px none; background-color: black; }
+        body { margin: 0px; overflow: hidden; background-color: white; }
+        canvas.emscripten { border: 0px none; background-color: white; }
     </style>
     <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
     <script type='text/javascript'>
@@ -59,7 +46,6 @@
     </head>
     <body>
         <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
-        <p id="output" />
 
         <!-- Hidden file input for File > Open. The C side calls bmsaOpenFile()
              (via emscripten_run_script), which clicks this input; once a file is
@@ -105,22 +91,11 @@
         </script>
         <script>
             var Module = {
-                print: (function() {
-                    var element = document.getElementById('output');
-                    if (element) element.value = ''; // clear browser cache
-                    return function(text) {
-                        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                        console.log(text);
-                        if (element) {
-                          element.value += text + "\n";
-                          element.scrollTop = element.scrollHeight; // focus on bottom
-                        }
-                    };
-                })(),
-                canvas: (function() {
-                    var canvas = document.getElementById('canvas');
-                    return canvas;
-                })()
+                print: function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+                },
+                canvas: document.getElementById('canvas')
             };
         </script>
         <script async type="text/javascript" src="bmsa.js"></script>
