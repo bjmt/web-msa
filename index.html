@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="EN-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>raylib web game</title>
+
+    <meta name="title" content="raylib web game">
+    <meta name="description" content="New raylib web videogame, developed using raylib videogames library">
+    <meta name="keywords" content="raylib, programming, examples, html5, C, C++, library, learn, games, videogames">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Open Graph metatags for sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="raylib web game">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image" content="https://www.raylib.com/common/raylib_logo.png">
+    <meta property="og:image:alt" content="New raylib web videogame, developed using raylib videogames library" />
+    <meta property="og:site_name" content="raylib - example">
+    <meta property="og:url" content="https://www.raylib.com/games.html">
+    <meta property="og:description" content="New raylib web videogame, developed using raylib videogames library">
+
+    <!-- Twitter metatags for sharing -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@raysan5">
+    <meta name="twitter:title" content="raylib web game">
+    <meta name="twitter:image" content="https://www.raylib.com/common/raylib_logo.png">
+    <meta name="twitter:image:alt" content="New raylib web videogame, developed using raylib videogames library">
+    <meta name="twitter:url" content="https://www.raylib.com/games.html">
+    <meta name="twitter:description" content="New raylib web videogame, developed using raylib videogames library">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="https://www.raylib.com/favicon.ico">
+
+    <style>
+        body { margin: 0px; overflow: hidden; background-color: black; }
+        canvas.emscripten { border: 0px none; background-color: black; }
+    </style>
+    <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
+    <script type='text/javascript'>
+        function saveFileFromMEMFSToDisk(memoryFSname, localFSname)     // This can be called by C/C++ code
+        {
+            var isSafari = false; // Not supported, navigator.userAgent access is being restricted
+            //var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            var data = FS.readFile(memoryFSname);
+            var blob;
+
+            if (isSafari) blob = new Blob([data.buffer], { type: "application/octet-stream" });
+            else blob = new Blob([data.buffer], { type: "application/octet-binary" });
+
+            // NOTE: SaveAsDialog is a browser setting. For example, in Google Chrome,
+            // in Settings/Advanced/Downloads section you have a setting:
+            // 'Ask where to save each file before downloading' - which you can set true/false.
+            // If you enable this setting it would always ask you and bring the SaveAsDialog
+            saveAs(blob, localFSname);
+        }
+    </script>
+    </head>
+    <body>
+        <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
+        <p id="output" />
+
+        <!-- Hidden file input for File > Open. The C side calls bmsaOpenFile()
+             (via emscripten_run_script), which clicks this input; once a file is
+             chosen we write its bytes into the Emscripten filesystem and hand the
+             path back to C through bmsa_web_load_file. -->
+        <input type="file" id="bmsaFileInput"
+               accept=".fa,.fasta,.fna,.afa,.aln,.txt,.gz" style="display:none" />
+        <!-- Hidden file input for File > Load metadata, the same hand-off as Open but routed to
+             bmsa_web_load_metadata. -->
+        <input type="file" id="bmsaMetaInput"
+               accept=".csv,.tsv,.txt" style="display:none" />
+        <script type='text/javascript'>
+            // Click a hidden file input, write the chosen file into the Emscripten filesystem, and
+            // hand its path to a C callback. Shared by the alignment and metadata inputs.
+            function bmsaWireInput(inputId, callback) {
+                document.getElementById(inputId).addEventListener('change', function(e) {
+                    var file = e.target.files[0];
+                    if (!file) return;
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        var data = new Uint8Array(reader.result);
+                        var path = '/' + file.name;
+                        try {
+                            FS.writeFile(path, data);
+                        } catch (err) {
+                            console.error('Could not write file into the filesystem', err);
+                            return;
+                        }
+                        Module.ccall(callback, null, ['string'], [path]);
+                    };
+                    reader.readAsArrayBuffer(file);
+                    e.target.value = '';  // let the same file be picked again
+                });
+            }
+            function bmsaOpenFile() {
+                document.getElementById('bmsaFileInput').click();
+            }
+            function bmsaOpenMetadata() {
+                document.getElementById('bmsaMetaInput').click();
+            }
+            bmsaWireInput('bmsaFileInput', 'bmsa_web_load_file');
+            bmsaWireInput('bmsaMetaInput', 'bmsa_web_load_metadata');
+        </script>
+        <script>
+            var Module = {
+                print: (function() {
+                    var element = document.getElementById('output');
+                    if (element) element.value = ''; // clear browser cache
+                    return function(text) {
+                        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                        console.log(text);
+                        if (element) {
+                          element.value += text + "\n";
+                          element.scrollTop = element.scrollHeight; // focus on bottom
+                        }
+                    };
+                })(),
+                canvas: (function() {
+                    var canvas = document.getElementById('canvas');
+                    return canvas;
+                })()
+            };
+        </script>
+        <script async type="text/javascript" src="bmsa.js"></script>
+    </body>
+</html>
